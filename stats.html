@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>AutoPayuz — Statistika</title>
+<style>
+:root{--bg:#070b15;--card:rgba(19,26,45,.74);--bd:rgba(120,140,190,.18);--tx:#eaf0ff;--mu:#93a2c4;
+ --ac:#6d5efc;--ac2:#22d3ee;--ok:#2ee6a8;--warn:#fbbf24;--danger:#fb7185}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:15px/1.55 Inter,system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx);overflow-x:hidden;
+ background-image:radial-gradient(55% 40% at 12% -5%,rgba(109,94,252,.26),transparent 70%),radial-gradient(45% 35% at 88% 4%,rgba(34,211,238,.16),transparent 70%)}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px 40px}
+nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(16px);background:rgba(7,11,21,.6);border-bottom:1px solid var(--bd)}
+nav .wrap{display:flex;align-items:center;gap:10px;height:60px;padding-bottom:0}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;margin-right:auto}
+.logo i{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:14px;
+ background:linear-gradient(135deg,var(--ac),var(--ac2))}
+.iconbtn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--bd);
+ background:rgba(255,255,255,.05);color:#cfd9ff;font-size:15px;cursor:pointer;transition:.2s}
+.iconbtn:hover{background:rgba(255,255,255,.1)}
+.iconbtn.spin i{animation:rot .8s linear}
+@keyframes rot{to{transform:rotate(360deg)}}
+h1{font-size:20px;margin:22px 0 2px;letter-spacing:-.3px}
+.sub{color:var(--mu);font-size:13px;margin:0 0 18px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;background:rgba(46,230,168,.15);color:var(--ok);margin-left:8px}
+.pill.none{background:rgba(251,113,133,.15);color:var(--danger)}
+
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;backdrop-filter:blur(12px);margin-bottom:14px;
+ opacity:0;transform:translateY(14px);animation:in .6s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+.hero{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:22px}
+.hero .big{font-size:clamp(30px,7vw,44px);font-weight:800;letter-spacing:-1.5px;line-height:1.05;
+ background:linear-gradient(90deg,#fff,#a5b8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero small{color:var(--mu);display:block;font-size:12px;letter-spacing:.4px}
+.hero .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:11px 16px;border-radius:13px;font-weight:700;font-size:13.5px;border:0;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:.2s}
+.btn.pri{color:#fff;background:linear-gradient(135deg,var(--ac),#8b5cf6);box-shadow:0 10px 26px rgba(109,94,252,.4)}
+.btn.pri:hover{transform:translateY(-2px)}
+.btn.gho{color:#dbe4ff;background:rgba(255,255,255,.06);border:1px solid var(--bd)}
+.btn.gho:hover{background:rgba(255,255,255,.12)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px 15px;position:relative;overflow:hidden}
+.kpi small{color:var(--mu);font-size:11.5px;letter-spacing:.4px;display:block}
+.kpi b{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.kpi .up{position:absolute;right:12px;top:12px;font-size:15px;opacity:.65}
+@media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
+
+.chart{position:relative}
+.chart svg{width:100%;height:170px;display:block;overflow:visible}
+.chart .grid line{stroke:rgba(255,255,255,.06)}
+.chart .area{opacity:.9}
+.chart .line{fill:none;stroke:url(#lg);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
+ stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.4s .25s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.chart .dot{fill:#fff;stroke:var(--ac2);stroke-width:2;opacity:0;animation:pop .35s forwards}
+@keyframes pop{to{opacity:1}}
+.chart .xl{fill:var(--mu);font-size:9.5px;text-anchor:middle}
+.chart .tt{position:absolute;pointer-events:none;background:#121a2e;border:1px solid var(--bd);border-radius:10px;padding:6px 9px;
+ font-size:11.5px;white-space:nowrap;opacity:0;transform:translate(-50%,-130%);transition:opacity .15s}
+.chart .tt.on{opacity:1}
+.charthead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.charthead b{font-size:15px}
+.charthead span{margin-left:auto;color:var(--mu);font-size:12px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+.donutwrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut{position:relative;width:132px;height:132px;flex:none}
+.donut svg{transform:rotate(-90deg)}
+.donut circle{fill:none;stroke-width:16;stroke-linecap:round;transition:stroke-dasharray 1s cubic-bezier(.2,.8,.2,1)}
+.donut .mid{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.donut .mid b{font-size:22px;display:block;line-height:1}
+.donut .mid small{color:var(--mu);font-size:10.5px}
+.legend{display:grid;gap:7px;font-size:13px;flex:1;min-width:140px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.legend span:last-child{margin-left:auto;font-weight:700}
+
+.bar{height:9px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:10px 0 6px}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.mini{color:var(--mu);font-size:12px;display:flex;justify-content:space-between}
+.ring{display:flex;align-items:center;gap:14px}
+.ring svg{transform:rotate(-90deg)}
+.ring .rv{fill:none;stroke-width:10;stroke-linecap:round}
+.ring .rmid{font-size:15px;font-weight:800;fill:var(--tx);transform:rotate(90deg);transform-origin:center}
+
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.sgrid{grid-template-columns:1fr 1fr}}
+.sitem{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:14px;padding:11px 13px}
+.sitem small{color:var(--mu);font-size:11px;display:block;letter-spacing:.3px}
+.sitem b{font-size:14.5px;word-break:break-all}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+
+.list{display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid var(--bd);
+ animation:in .5s both}
+.row .l{min-width:0}
+.row .l b{font-size:13.5px;font-weight:700}
+.row .l small{display:block;color:var(--mu);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .r{margin-left:auto;text-align:right;font-weight:700;font-size:13.5px}
+.st{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:700}
+.st.paid{background:rgba(46,230,168,.15);color:var(--ok)}
+.st.waiting,.st.creating{background:rgba(251,191,36,.15);color:var(--warn)}
+.st.expired{background:rgba(147,162,196,.15);color:var(--mu)}
+.st.failed{background:rgba(251,113,133,.15);color:var(--danger)}
+.empty{color:var(--mu);font-size:13px;text-align:center;padding:14px}
+
+#need{position:fixed;inset:0;display:none;place-items:center;background:rgba(4,7,14,.92);z-index:99;padding:24px;text-align:center}
+#need.on{display:grid}
+#need .box{max-width:360px}
+#need h2{margin:0 0 8px;font-size:22px}
+#need p{color:var(--mu);margin:0 0 18px}
+.hidden{display:none}
+.skel{height:16px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.14),rgba(255,255,255,.06));
+ background-size:200% 100%;animation:sh 1.3s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* premium emoji */
+.em{display:inline-block;animation:bob 2.6s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+@keyframes bob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.12)}}
+.chip{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:17px;flex:none;
+ background:linear-gradient(135deg,rgba(109,94,252,.35),rgba(34,211,238,.25));border:1px solid var(--bd);
+ animation:popin .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popin{from{transform:scale(0) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+
+/* live dot */
+.live{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--ok);font-weight:700}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pl 1.6s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(46,230,168,.55)}70%{box-shadow:0 0 0 9px rgba(46,230,168,0)}100%{box-shadow:0 0 0 0 rgba(46,230,168,0)}}
+
+/* hero shine */
+.hero{position:relative;overflow:hidden}
+.hero .big{position:relative}
+.hero .big::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);
+ transform:translateX(-120%);animation:sheen 3.4s ease-in-out infinite}
+@keyframes sheen{0%{transform:translateX(-120%)}55%,100%{transform:translateX(140%)}}
+
+/* card hover + orbs */
+.card{transition:transform .25s,box-shadow .25s}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.orb{position:fixed;font-size:34px;opacity:.16;pointer-events:none;z-index:0;animation:drift 11s ease-in-out infinite}
+@keyframes drift{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-34px) rotate(8deg)}}
+.kpi:hover .up{animation:popin .5s cubic-bezier(.34,1.56,.64,1)}
+.kpi .up{border-radius:10px;display:grid;place-items:center;width:30px;height:30px;font-size:15px;
+ background:linear-gradient(135deg,rgba(109,94,252,.3),rgba(34,211,238,.2));border:1px solid var(--bd)}
+.wrap{position:relative;z-index:1}
+
+/* --- v3.7: pro animatsiyalar --- */
+body:before{content:'';position:fixed;inset:-20% -10%;z-index:0;pointer-events:none;background:
+ radial-gradient(40% 30% at 16% 6%,rgba(109,94,252,.26),transparent 65%),
+ radial-gradient(38% 28% at 88% 12%,rgba(34,211,238,.2),transparent 62%),
+ radial-gradient(45% 34% at 50% 104%,rgba(139,92,246,.18),transparent 60%);
+ animation:aurora 18s ease-in-out infinite alternate}
+@keyframes aurora{0%{transform:translate3d(-2%,-1%,0) scale(1)}100%{transform:translate3d(2%,2%,0) scale(1.09)}}
+.card,.kpi{animation:rise .55s cubic-bezier(.2,.9,.25,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(20px) scale(.985)}to{opacity:1;transform:none}}
+.two .card:nth-child(2){animation-delay:.12s}
+.kpi:nth-child(1){animation-delay:.06s}.kpi:nth-child(2){animation-delay:.13s}
+.kpi:nth-child(3){animation-delay:.2s}.kpi:nth-child(4){animation-delay:.27s}
+.kpi{transition:transform .28s cubic-bezier(.2,.9,.25,1),box-shadow .28s,border-color .28s}
+.kpi:hover{transform:translateY(-4px);border-color:rgba(109,94,252,.55);box-shadow:0 18px 40px rgba(109,94,252,.22)}
+.kpi:hover .up{transform:scale(1.2) rotate(-8deg)}
+.kpi b{text-shadow:0 0 18px rgba(109,94,252,.35)}
+#bal,#avail{background:linear-gradient(90deg,#fff,#bcd0ff,#fff);background-size:220% 100%;
+ -webkit-background-clip:text;background-clip:text;color:transparent;animation:gsh 6s linear infinite}
+@keyframes gsh{to{background-position:-220% 0}}
+.btn,.cp,#refresh{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.32);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(3.2);opacity:0}}
+#refresh i{display:inline-block;transition:transform .6s cubic-bezier(.2,.9,.25,1)}
+#refresh.spn i{transform:rotate(360deg)}
+.chart:hover{box-shadow:0 20px 50px rgba(109,94,252,.18)}
+svg#chart .line{filter:drop-shadow(0 0 8px rgba(34,211,238,.55))}
+.list .row,.sitem,.box{transition:transform .25s cubic-bezier(.2,.9,.25,1),box-shadow .25s,border-color .25s}
+.list .row:hover{transform:translateX(3px);border-color:rgba(34,211,238,.45)}
+.sitem:hover{transform:translateY(-3px);border-color:rgba(109,94,252,.5)}
+.box:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(0,0,0,.32)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style></head><body>
+<nav><div class="wrap">
+  <div class="logo"><i>📊</i> Statistika <span class="live"><i></i>jonli</span></div>
+  <button class="iconbtn" id="refresh" title="Yangilash" onclick="load(true)"><i>↻</i></button>
+  <a class="iconbtn" href="index.html" title="Mini App">📱</a>
+</div></nav>
+
+<div class="orb" style="top:14%;left:4%">💎</div>
+<div class="orb" style="top:38%;right:5%;animation-delay:-3s">🚀</div>
+<div class="orb" style="top:66%;left:7%;animation-delay:-6s">⚡</div>
+<div class="orb" style="top:84%;right:9%;animation-delay:-8s">🎯</div>
+
+<div class="wrap">
+  <h1 id="who">Yuklanmoqda…</h1>
+  <p class="sub">API hisobi, to'lovlar va yechishlar bo'yicha jonli ko'rsatkichlar · <span id="stamp">—</span></p>
+
+  <div class="card hero">
+    <div>
+      <small>BALANS</small>
+      <div class="big" id="bal">0</div>
+      <small style="margin-top:6px">Yechish mumkin: <b id="avail">0</b> so'm</small>
+    </div>
+    <div class="acts">
+      <button class="btn pri" onclick="go('top')">💳 Balans to'ldirish</button>
+      <a class="btn gho" href="tariflar.html" id="tarBtn">📄 Tariflar</a>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi"><span class="up">💰</span><small>BUGUN TUSHUM</small><b id="k1">—</b></div>
+    <div class="kpi"><span class="up">🧾</span><small>BUGUN TO'LOVLAR</small><b id="k2">—</b></div>
+    <div class="kpi"><span class="up">📈</span><small>14 KUN TUSHUM</small><b id="k3">—</b></div>
+    <div class="kpi"><span class="up">🎯</span><small>MUVAFFAQIYAT</small><b id="k4">—</b></div>
+  </div>
+
+  <div class="card chart" id="chartCard">
+    <div class="charthead"><b><span class="em">📈</span> Kunlik tushum</b><span>oxirgi 14 kun</span></div>
+    <svg id="chart" viewBox="0 0 600 170" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+        <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(109,94,252,.45)"/><stop offset="1" stop-color="rgba(109,94,252,0)"/></linearGradient>
+      </defs>
+      <g class="grid"><line x1="0" y1="10" x2="600" y2="10"/><line x1="0" y1="60" x2="600" y2="60"/><line x1="0" y1="110" x2="600" y2="110"/><line x1="0" y1="150" x2="600" y2="150"/></g>
+      <path class="area" id="area" fill="url(#ag)"></path>
+      <path class="line" id="line"></path>
+      <g id="dots"></g>
+      <g id="xlabels"></g>
+    </svg>
+    <div class="tt" id="tt"></div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <div class="charthead"><b><span class="em">🍩</span> To'lov holati</b><span>14 kun</span></div>
+      <div class="donutwrap">
+        <div class="donut">
+          <svg id="donutSvg" width="132" height="132" viewBox="0 0 132 132"></svg>
+          <div class="mid"><div><b id="dRate">0%</b><small>muvaffaqiyat</small></div></div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="charthead"><b><span class="em">💎</span> Tarif holati</b><span id="tarName">—</span></div>
+      <div class="mini"><span>Ishlatilgan</span><span id="usedTxt">—</span></div>
+      <div class="bar"><i id="usedBar"></i></div>
+      <div class="mini" style="margin-top:14px"><span>Obuna muddati</span><span id="untilTxt">—</span></div>
+      <div class="ring" style="margin-top:10px">
+        <svg width="70" height="70" viewBox="0 0 70 70">
+          <circle class="rv" cx="35" cy="35" r="28" stroke="rgba(255,255,255,.08)"></circle>
+          <circle class="rv" id="dayRing" cx="35" cy="35" r="28" stroke="#22d3ee"></circle>
+        </svg>
+        <div><b id="daysTxt" style="font-size:20px">—</b><div class="mini" style="margin:0">kun qoldi</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="charthead"><b><span class="em">🧭</span> Ko'rsatkichlar</b><span class="live"><i></i>jonli</span></div>
+    <div class="sgrid">
+      <div class="sitem"><small>💳 O'RTACHA CHEK</small><b id="sAvg">—</b></div>
+      <div class="sitem"><small>🗂 KARTALAR</small><b id="sCards">—</b></div>
+      <div class="sitem"><small>⏳ YECHISH KUTMOQDA</small><b id="sWd">—</b></div>
+      <div class="sitem"><small>💸 YECHILGAN (14 KUN)</small><b id="sWdDone">—</b></div>
+      <div class="sitem"><small>🔔 WEBHOOK NAVBAT</small><b id="sWh">—</b></div>
+      <div class="sitem"><small>📡 OXIRGI WEBHOOK KODI</small><b id="sWhCode">—</b></div>
+    </div>
+    <div class="sitem" style="margin-top:10px">
+      <small>🔑 API KALIT</small>
+      <b id="sKey" style="font-family:ui-monospace,Consolas,monospace;font-size:12px">—</b>
+      <button class="btn gho" style="padding:6px 12px;margin-left:8px" onclick="copyKey()">Nusxa</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="charthead"><b><span class="em">🧾</span> Oxirgi to'lovlar</b><span>API</span></div>
+    <div class="list" id="recent"><div class="skel"></div></div>
+  </div>
+</div>
+
+<div id="need"><div class="box">
+  <h2>🔒 Statistika</h2>
+  <p>Bu sahifa Telegram Mini App orqali ochiladi. Botni ochib, «📈 Statistika (web)» tugmasini bosing.</p>
+  <a class="btn pri" id="needBot" href="https://t.me/autopayuz_robot">Botni ochish →</a>
+</div></div>
+
+<script>
+try{const w=Telegram.WebApp;w.ready();w.expand();if(w.setHeaderColor)w.setHeaderColor('#070b15');}catch(e){}
+const tg=window.Telegram?window.Telegram.WebApp:null;
+const INIT=tg?tg.initData:"";
+// Sahifa boshqa domenda (masalan GitHub Pages) tursa: ?api=https://BACKEND bir marta ochilsa, keyin esda qoladi
+const API_DEFAULT="https://translated-viruses-contributing-eat.trycloudflare.com";
+const APIB=(()=>{const q=new URLSearchParams(location.search).get('api');
+  if(q){try{localStorage.setItem('ap_api',q)}catch(e){}return q.replace(/\/+$/,'')}
+  try{return (localStorage.getItem('ap_api')||API_DEFAULT).replace(/\/+$/,'')}catch(e){return API_DEFAULT}})();
+if(APIB)document.querySelectorAll('a[href^="/"]').forEach(a=>a.href=APIB+a.getAttribute('href'));
+const BOT="autopayuz_robot";
+const $=id=>document.getElementById(id);
+document.querySelectorAll('.card').forEach((el,i)=>el.style.animationDelay=(i*90)+'ms');
+const fmt=n=>Number(n||0).toLocaleString('ru-RU').replace(/\u00a0/g,' ');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function go(arg){
+  const u='https://t.me/'+BOT+'?start='+arg;
+  if(tg&&tg.openTelegramLink)tg.openTelegramLink(u);else location.href=u;
+}
+function copyKey(){
+  const k=$('sKey').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(k);
+  $('sKey').style.color='#2ee6a8';setTimeout(()=>$('sKey').style.color='',900);
+}
+function countUp(el,to,suffix){
+  const from=0,st=performance.now(),d=900;
+  const end=()=>{el.textContent=fmt(to)+(suffix||'');};
+  function f(t){
+    const p=Math.min(1,(t-st)/d), v=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));
+    el.textContent=fmt(v)+(suffix||''); if(p<1)requestAnimationFrame(f);
+  }
+  requestAnimationFrame(f);
+  setTimeout(end,1000);
+}
+function dshort(s){return s?s.slice(8,10)+'.'+s.slice(5,7)+' '+s.slice(11,16):'—';}
+
+if(!INIT){$('need').classList.add('on');}
+
+async function load(manual){
+  if(!INIT)return;
+  const b=$('refresh');b.classList.add('spin');setTimeout(()=>b.classList.remove('spin'),800);
+  try{
+    const r=await fetch(APIB+'/api/app/dashboard',{headers:{'X-Init-Data':INIT},cache:'no-store'});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'HTTP '+r.status);
+    paint(d);
+  }catch(e){
+    if(manual)$('stamp').textContent='Xato: '+e.message;
+  }
+}
+
+function paint(d){
+  $('who').innerHTML=esc(d.name||'Foydalanuvchi')+(d.tariff?'<span class="pill">'+esc(d.tariff)+'</span>':'<span class="pill none">Obuna yo\'q</span>');
+  countUp($('bal'),d.balance);
+  countUp($('avail'),d.available);
+  countUp($('k1'),d.today.s);
+  countUp($('k2'),d.today.n);
+  countUp($('k3'),d.d14.s);
+  $('k4').textContent=d.rate+'%';
+  countUp($('dRate'),d.rate,'%');
+  $('stamp').textContent=d.server_time.slice(11,16);
+
+  $('sAvg').textContent=fmt(d.avg)+" so'm";
+  $('sCards').textContent=d.cards+' ta';
+  $('sWd').textContent=d.wd.pending+' ta';
+  $('sWdDone').textContent=fmt(d.wd.done_s)+" so'm";
+  $('sWh').textContent=d.wh.pending+' ta';
+  $('sWhCode').textContent=d.wh.last_code==null?'—':d.wh.last_code;
+
+  const k=$('sKey');k.textContent=d.api_key||'—';
+
+  // tarif
+  $('tarName').textContent=d.tariff||'Obuna yo\'q';
+  const pct=d.tx_limit?Math.min(100,Math.round(d.used*100/d.tx_limit)):100;
+  $('usedTxt').textContent=d.used+' / '+(d.tx_limit?fmt(d.tx_limit):'∞');
+  setTimeout(()=>{$('usedBar').style.width=pct+'%'},150);
+  $('untilTxt').textContent=d.sub_until?d.sub_until.slice(0,10).split('-').reverse().join('.'):'—';
+  const dl=d.days_left;
+  $('daysTxt').textContent=dl==null?'—':dl;
+  const C=2*Math.PI*28, dp=dl==null?0:Math.max(0,Math.min(1,dl/30));
+  const ring=$('dayRing');
+  ring.style.strokeDasharray='0 '+C;
+  setTimeout(()=>{ring.style.strokeDasharray=(C*dp)+' '+C;},200);
+  ring.style.stroke=dl!=null&&dl<=3?'#fb7185':'#22d3ee';
+
+  drawChart(d.series);
+  drawDonut(d.statuses,d.rate);
+
+  $('recent').innerHTML=d.recent.length?d.recent.map((p,i)=>
+    `<div class="row" style="animation-delay:${i*60}ms"><div class="l"><b>#${p.id} · ${esc(p.ref||'—')}</b><small>${dshort(p.created)}</small></div>`+
+    `<span class="st ${p.status}">${p.status}</span><div class="r">${fmt(p.sum)}</div></div>`).join('')
+    :'<div class="empty">Hozircha to\'lov yo\'q</div>';
+}
+
+function drawChart(series){
+  const svg=$('chart'), W=600, H=150, pad=6;
+  const vals=series.map(s=>s.s), mx=Math.max(1,...vals);
+  const n=series.length, step=(W-2*pad)/Math.max(1,n-1);
+  const pts=vals.map((v,i)=>[pad+i*step, H-pad-(v/mx)*(H-2*pad)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L${(pad+(n-1)*step).toFixed(1)} ${H} L${pad} ${H} Z`;
+  const L=$('line');L.setAttribute('d',line);
+  const len=L.getTotalLength?L.getTotalLength():900;
+  L.style.setProperty('--len',len);L.style.strokeDasharray=len;L.style.strokeDashoffset=len;
+  L.style.animation='none';void L.offsetWidth;L.style.animation='draw 1.4s .25s cubic-bezier(.2,.8,.2,1) forwards';
+  $('area').setAttribute('d',area);
+  $('dots').innerHTML=pts.map((p,i)=>`<circle class="dot" cx="${p[0]}" cy="${p[1]}" r="3" style="animation-delay:${.4+i*.05}s"/>`).join('')
+    + pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="12" fill="transparent" data-i="${i}" class="hov"/>`).join('');
+  $('xlabels').innerHTML=series.map((s,i)=>`<text class="xl" x="${pts[i][0]}" y="${H+16}">${s.d}</text>`).join('');
+  const tt=$('tt'), card=$('chartCard');
+  svg.querySelectorAll('.hov').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{
+      const i=+el.dataset.i, s=series[i], r=svg.getBoundingClientRect(), cr=card.getBoundingClientRect();
+      tt.textContent=s.d+' · '+fmt(s.s)+" so'm · "+s.n+" ta";
+      tt.style.left=(r.left-cr.left+pts[i][0]/W*r.width)+'px';
+      tt.style.top=(r.top-cr.top+pts[i][1]/H*r.height)+'px';
+      tt.classList.add('on');
+    });
+    el.addEventListener('mouseleave',()=>tt.classList.remove('on'));
+  });
+}
+
+const ST_COL={'paid':'#2ee6a8','waiting':'#fbbf24','expired':'#93a2c4','failed':'#fb7185','creating':'#6d5efc'};
+const ST_NAME={'paid':"To'langan",'waiting':'Kutilmoqda','expired':"Muddati tugagan",'failed':"Amalga oshmadi",'creating':'Yaratilmoqda'};
+function drawDonut(st,rate){
+  const total=Object.values(st).reduce((a,b)=>a+b,0)||1;
+  const C=2*Math.PI*52;
+  const svg=$('donutSvg');
+  svg.innerHTML='<circle cx="66" cy="66" r="52" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="16"></circle>';
+  let acc=0, i=0;
+  for(const [k,v] of Object.entries(st)){
+    if(!v)continue;
+    const c=ST_COL[k]||'#6d5efc', frac=v/total;
+    const el=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    el.setAttribute('cx',66);el.setAttribute('cy',66);el.setAttribute('r',52);el.setAttribute('fill','none');
+    el.setAttribute('stroke',c);el.setAttribute('stroke-width',16);el.setAttribute('stroke-linecap','round');
+    el.style.strokeDasharray='0 '+C;
+    svg.appendChild(el);
+    const off=-C*acc;
+    setTimeout(()=>{el.style.strokeDasharray=(C*frac)+' '+C;el.style.strokeDashoffset=off;},250+i*110);
+    acc+=frac;i++;
+  }
+  $('dRate').textContent=rate+'%';
+  $('legend').innerHTML=Object.entries(st).filter(([,v])=>v).map(([k,v])=>
+    `<div><i style="background:${ST_COL[k]||'#6d5efc'}"></i><span>${ST_NAME[k]||esc(k)}</span><span>${v}</span></div>`).join('')
+    ||'<div class="empty">Ma\'lumot yo\'q</div>';
+}
+
+load();
+setInterval(()=>load(false),20000);
+
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+if(!RM){
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('.btn,#refresh,.iconbtn');if(!b)return;
+    const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height);
+    const s=document.createElement('span');s.className='rip';
+    s.style.cssText='left:'+(e.clientX-r.left-d/2)+'px;top:'+(e.clientY-r.top-d/2)+'px;width:'+d+'px;height:'+d+'px';
+    b.appendChild(s);setTimeout(()=>s.remove(),650);
+  });
+  const rf=$('refresh');
+  if(rf)rf.addEventListener('click',()=>{rf.classList.add('spn');setTimeout(()=>rf.classList.remove('spn'),640);});
+}
+</script></body></html>

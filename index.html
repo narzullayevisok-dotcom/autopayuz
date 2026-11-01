@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="uz" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>AutoPayuz — Mini App</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:linear-gradient(160deg,#0f172a,#1e293b 60%,#0b1220);color:#e2e8f0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;padding:16px 14px 28px}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.head b{font-size:17px}
+.head span{font-size:12px;color:#8fa3bf}
+.balance{background:linear-gradient(135deg,#1d4ed8,#4338ca);border-radius:20px;padding:18px;box-shadow:0 14px 40px rgba(29,78,216,.35)}
+.balance .lbl{font-size:12px;opacity:.75}
+.balance .big{font-size:30px;font-weight:800;margin-top:4px;letter-spacing:.3px}
+.balance .row{display:flex;justify-content:space-between;margin-top:14px;font-size:13px;opacity:.92;gap:8px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.16);font-size:11px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.tile{background:#111c33;border:1px solid #24324d;border-radius:14px;padding:12px;text-align:center;font-size:12px;color:#9db0c9;cursor:pointer}
+.tile b{display:block;font-size:16px;color:#e2e8f0;margin-bottom:4px}
+.titem{padding:10px 0;border-bottom:1px dashed #22304a}
+.titem:last-child{border-bottom:0}
+.titem .trow{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;gap:10px}
+.titem .s{font-size:11px;color:#7f93ae;margin-top:3px}
+.mini{width:auto;margin-top:8px;padding:9px 16px;font-size:13px;border-radius:10px}
+.docsbtn{display:block;text-align:center;margin-top:10px;background:#16233c;border:1px solid #2a3a57;color:#cfe0f7;border-radius:12px;padding:12px;font-size:14px;font-weight:600;text-decoration:none}
+.docsbtn:active{background:#1b2a47}
+.card{background:#111c33;border:1px solid #24324d;border-radius:16px;padding:16px;margin-top:14px}
+.card h3{font-size:14px;margin-bottom:10px;color:#c7d5e8}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed #22304a;font-size:13px;gap:10px}
+.row:last-child{border-bottom:0}
+.row .s{font-size:11px;color:#7f93ae}
+.ok{color:#4ade80}.bad{color:#f87171}.wait{color:#fbbf24}
+input{width:100%;background:#0c1526;border:1px solid #2a3a57;color:#e2e8f0;border-radius:12px;padding:13px;font-size:15px;outline:0}
+input:focus{border-color:#3b82f6}
+button{width:100%;margin-top:10px;background:linear-gradient(90deg,#2563eb,#4f46e5);border:0;color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}
+.hint{font-size:12px;color:#7f93ae;margin-top:8px;line-height:1.5}
+.hidden{display:none}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#22c55e;color:#04120a;padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+#toast.on{opacity:1;bottom:34px}
+#toast.err{background:#ef4444;color:#fff}
+.empty{text-align:center;color:#5b6f8c;font-size:13px;padding:14px 0}
+.chip{display:inline-block;margin:8px 6px 0 0;padding:7px 12px;border-radius:10px;background:#16233c;border:1px solid #2a3a57;color:#cfe0f7;font-size:12px;font-weight:700;cursor:pointer}
+.chip:active{background:#1b2a47}
+.pbox{margin-top:14px;border:1px dashed #2f4468;border-radius:14px;padding:14px;background:#0c1526}
+.pbox .ttl{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:800;gap:8px}
+.pbox .ref{font-size:11px;color:#7f93ae;margin-top:4px;word-break:break-all}
+.pbox .big{font-size:22px;font-weight:800;margin-top:8px}
+.pbox .exp{font-size:11.5px;color:#fbbf24;margin-top:6px}
+.vrow{display:flex;gap:8px;margin-top:12px}
+.vrow button{margin-top:0}
+.sec{background:#16233c!important;border:1px solid #2a3a57!important;color:#cfe0f7!important}
+.dng{background:#3b1220!important;border:1px solid #7f2b3c!important;color:#fca5a5!important}
+.cp{width:auto;margin-top:10px;padding:8px 14px;font-size:12px;background:#16233c;border:1px solid #2a3a57;color:#9db0c9;border-radius:10px}
+.link{font-size:11px;color:#6b83a5;margin-top:8px;word-break:break-all;line-height:1.5}
+.link a{color:#7dd3fc}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btns .mini{width:auto;margin:8px 0 0;padding:8px 12px;font-size:12px}
+.qrimg{display:block;margin:12px auto 0;width:186px;height:186px;border-radius:14px;background:#fff;padding:8px;border:0}
+.mtx{margin-top:12px;background:#0a1220;border:1px solid #2a3a57;border-radius:12px;padding:11px 12px;font-size:12px;color:#cfe0f7;white-space:pre-wrap;word-break:break-word;line-height:1.55}
+.code{margin-top:8px;background:#0a1220;border:1px dashed #2f4468;border-radius:10px;padding:8px 10px;font-size:10.5px;color:#7dd3fc;word-break:break-all;line-height:1.6;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.code b{color:#7f93ae;font-weight:600}
+.promo{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:12px 13px;border-radius:14px;background:linear-gradient(135deg,rgba(251,191,36,.16),rgba(236,72,153,.14));border:1px solid rgba(251,191,36,.38);font-size:12.5px;line-height:1.5;color:#fde68a}
+.promo b{color:#fff}
+.promo .ic{font-size:20px;line-height:1}
+.free{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:rgba(52,211,153,.18);border:1px solid rgba(52,211,153,.45);color:#6ee7b7;font-size:10.5px;font-weight:800;vertical-align:2px}
+.tfeat{margin:7px 0 0;padding:0;list-style:none}
+.tfeat li{font-size:11.5px;color:#8ea3c4;padding:2px 0 2px 14px;position:relative;line-height:1.5}
+.tfeat li:before{content:'·';position:absolute;left:2px;color:#4f7dff;font-weight:800}
+.tf{margin-top:6px}
+.tf summary{font-size:11.5px;color:#7dd3fc;cursor:pointer;list-style:none}
+.tf summary:before{content:'▸ ';color:#4f7dff}
+.tf[open] summary:before{content:'▾ '}
+
+/* --- v3.7: pro animatsiyalar --- */
+body:before{content:'';position:fixed;inset:-20% -10%;z-index:-1;background:
+ radial-gradient(40% 30% at 15% 8%,rgba(79,125,255,.28),transparent 65%),
+ radial-gradient(38% 28% at 88% 12%,rgba(139,92,246,.24),transparent 62%),
+ radial-gradient(45% 32% at 50% 105%,rgba(6,182,212,.2),transparent 60%);
+ filter:blur(8px);animation:aurora 16s ease-in-out infinite alternate}
+@keyframes aurora{0%{transform:translate3d(-2%,-1%,0) scale(1)}100%{transform:translate3d(2%,2%,0) scale(1.08)}}
+.card,.balance,.tile,.docsbtn{transition:transform .3s cubic-bezier(.2,.9,.25,1),box-shadow .3s,border-color .3s}
+.card:hover{transform:translateY(-2px)}
+.balance:hover{transform:translateY(-3px) scale(1.008);box-shadow:0 22px 60px rgba(29,78,216,.5)}
+.tile:hover{transform:translateY(-3px);border-color:#3b5c92;box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.tile:active{transform:scale(.96)}
+.tile b{display:inline-block;transition:transform .3s}
+.tile:hover b{transform:scale(1.18) rotate(-6deg)}
+button{position:relative;overflow:hidden;transition:transform .2s,box-shadow .25s,filter .25s}
+button:not(:disabled):hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 12px 26px rgba(37,99,235,.35)}
+button:not(:disabled):active{transform:scale(.97)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(3.2);opacity:0}}
+.card:not(.hidden){animation:cardin .5s cubic-bezier(.2,.9,.25,1) both}
+@keyframes cardin{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+.in{animation:cardin .45s cubic-bezier(.2,.9,.25,1) both}
+#plist .titem,#wlist .row,.tfeat li{animation:up .4s ease-out both}
+#plist .titem:nth-child(1),#wlist .row:nth-child(1){animation-delay:.05s}
+#plist .titem:nth-child(2),#wlist .row:nth-child(2){animation-delay:.1s}
+#plist .titem:nth-child(3),#wlist .row:nth-child(3){animation-delay:.15s}
+#plist .titem:nth-child(4),#wlist .row:nth-child(4){animation-delay:.2s}
+#plist .titem:nth-child(5),#wlist .row:nth-child(5){animation-delay:.25s}
+#plist .titem:nth-child(6){animation-delay:.3s}#plist .titem:nth-child(7){animation-delay:.35s}
+#plist .titem:nth-child(8){animation-delay:.4s}#plist .titem:nth-child(n+9){animation-delay:.45s}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pbox,.mtx{animation:up .45s ease-out both}
+.balance .big{background:linear-gradient(90deg,#fff,#bcd0ff,#fff);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5.5s linear infinite}
+@keyframes shine{to{background-position:-220% 0}}
+.pill{animation:pulse 2.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.18)}50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}}
+.chip{transition:transform .2s,background .2s}.chip:hover{transform:translateY(-2px)}
+.promo{animation:up .5s ease-out both,glowb 4s ease-in-out infinite}
+@keyframes glowb{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 24px -6px rgba(251,191,36,.55)}}
+.empty{animation:fadein 1.2s ease-in-out infinite alternate}
+@keyframes fadein{from{opacity:.45}to{opacity:.95}}
+#toast{transition:opacity .25s,transform .35s cubic-bezier(.2,1.4,.4,1)}
+.tf summary{cursor:pointer;transition:color .2s}.tf summary:hover{color:#cfe0f7}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="head"><b>⚡ AutoPayuz</b><span id="who">—</span></div>
+
+<div class="balance">
+  <div class="lbl" data-i18n="balance">Balans</div>
+  <div class="big" id="bal">—</div>
+  <div class="row"><span><span data-i18n="available">Yechish mumkin:</span> <b id="avail">—</b></span><span class="pill" id="tar">—</span></div>
+  <div class="row"><span id="sub">—</span><span id="lim">—</span></div>
+</div>
+
+<div class="grid">
+  <div class="tile" onclick="show('hist')"><b>🧾</b><span data-i18n="tab_hist">Tarix</span></div>
+  <div class="tile" onclick="show('wd')"><b>💸</b><span data-i18n="tab_wd">Yechish</span></div>
+  <div class="tile" onclick="show('tarcard')"><b>📄</b><span data-i18n="tab_tar">Tariflar</span></div>
+  <div class="tile" onclick="show('docs')"><b>📚</b><span data-i18n="tab_docs">Docs</span></div>
+  <div class="tile" onclick="openLink('stats.html')"><b>📈</b><span data-i18n="tab_stats">Statistika</span></div>
+  <div class="tile" onclick="show('mk')"><b>➕</b><span data-i18n="tab_mk">To'lov yaratish</span></div>
+</div>
+
+<div class="card hidden" id="mk">
+  <h3 data-i18n="mk_title">➕ Yangi to'lov yaratish</h3>
+  <div class="hint" data-i18n="mk_hint">Summani yozing — to'lov darhol yaratiladi. Hammasi mijozning o'z botingiz ichida bo'ladi: karta, holat, «Men to'ladim» va bekor qilish. QR kod faqat to'lov sahifasida ochiladi.</div>
+  <input id="pamt" type="number" inputmode="numeric" data-i18n-ph="amount" placeholder="Summa (so'm)" min="1000">
+  <div id="pchips"></div>
+  <input id="pref" style="margin-top:10px" data-i18n-ph="ref_ph" placeholder="Buyurtma raqami / izoh">
+  <button id="pbtn" onclick="mkPay()" data-i18n="mk_btn">To'lov yaratish</button>
+  <div id="pout"></div>
+</div>
+
+<div class="card" id="hist">
+  <h3 data-i18n="recent_pay">🧾 Oxirgi to'lovlar</h3>
+  <div id="plist"><div class="empty" data-i18n="loading">Yuklanmoqda…</div></div>
+</div>
+
+<div class="card hidden" id="wd">
+  <h3 data-i18n="wd_title">💸 Pul yechish</h3>
+  <div id="opin" class="hint"></div>
+  <input id="amt" type="number" inputmode="numeric" data-i18n-ph="amount" placeholder="Summa (so'm)" min="1">
+  <button id="wbtn" onclick="doWithdraw()" data-i18n="send_req">So'rov yuborish</button>
+  <div class="hint" id="whint"></div>
+  <h3 style="margin-top:16px" data-i18n="wd_hist">📜 Yechish tarixi</h3>
+  <div id="wlist"><div class="empty">—</div></div>
+</div>
+
+<div class="card hidden" id="tarcard">
+  <h3 data-i18n="tar_title">📄 Tariflar</h3>
+  <div id="promobox"></div>
+  <div id="tlist"><div class="empty">—</div></div>
+  <div class="hint" data-i18n="buy_hint">Tarifni tanlab «Sotib olish» ni bosing — bot ochiladi va tarif avtomatik ulanadi.</div>
+</div>
+
+<div class="card hidden" id="docs">
+  <h3 data-i18n="docs_title">📚 Hujjatlar</h3>
+  <div class="hint" data-i18n="docs_hint">API hujjatlari va tariflar sahifasi alohida bo'limlar.</div>
+  <a class="docsbtn" id="docs_link" href="#" data-i18n="docs_open">📘 API hujjatlari</a>
+  <a class="docsbtn" id="tar_link" href="#" data-i18n="tar_page">🌐 Tariflar sahifasi</a>
+</div>
+
+<div id="toast"></div>
+<script>
+const tg = window.Telegram ? window.Telegram.WebApp : null;
+if (tg) { tg.ready(); tg.expand(); }
+const INIT = tg ? tg.initData : "";
+// Sahifa boshqa domenda (masalan GitHub Pages) tursa: ?api=https://BACKEND  bir marta oching, keyin esda qoladi
+const API_DEFAULT="https://translated-viruses-contributing-eat.trycloudflare.com";
+const APIB = (() => { const q = new URLSearchParams(location.search).get("api");
+  if (q) { try { localStorage.setItem("ap_api", q); } catch (e) {} return q.replace(/\/+$/, ""); }
+  try { return (localStorage.getItem("ap_api") || API_DEFAULT).replace(/\/+$/, ""); } catch (e) { return API_DEFAULT; } })();
+const H = {"X-Init-Data": INIT};
+const BOT = "autopayuz_robot";
+const ME = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : {};
+
+const I18N = {
+  uz: {
+    balance: "Balans", available: "Yechish mumkin:", no_sub: "Obuna yo'q", until: "Muddat: ",
+    limit: "Limit: ", today: "bugun", tab_hist: "Tarix", tab_wd: "Yechish", tab_tar: "Tariflar",
+    recent_pay: "🧾 Oxirgi to'lovlar", loading: "Yuklanmoqda…", no_pays: "To'lovlar yo'q",
+    wd_title: "💸 Pul yechish", amount: "Summa (so'm)", send_req: "So'rov yuborish", wd_hist: "📜 Yechish tarixi",
+    tar_title: "📄 Tariflar", no_wd: "Yechishlar yo'q", prof_saved: "Karta ma'lumotlari saqlangan.",
+    prof_none: "Avval botda karta ma'lumotlarini kiriting (Pul yechish bo'limi).",
+    wd_sent: "So'rov yuborildi", wd_enter: "Summani kiriting", wd_limit: "Kunlik limitdan oshadi",
+    wd_confirm: "Yechish: {sum}. Tasdiqlaysizmi?", days: "kun", pays_n: "to'lov", cards_n: "karta", unlimited: "cheksiz",
+    st_pending: "kutilmoqda", st_paid: "to'landi", st_done: "yakunlandi", st_rejected: "rad etildi", som: "so'm",
+    tab_docs: "Docs", tab_stats: "Statistika", docs_title: "📚 Hujjatlar", docs_hint: "API hujjatlari va tariflar sahifasi alohida bo'limlar.",
+    docs_open: "📘 API hujjatlari", tar_page: "🌐 Tariflar sahifasi", buy: "Sotib olish", buy_hint: "Tarifni tanlab «Sotib olish» ni bosing — bot ochiladi va tarif avtomatik ulanadi.",
+    tab_mk: "To'lov yaratish", mk_title: "➕ Yangi to'lov yaratish", mk_hint: "Summani yozing — to'lov darhol yaratiladi. Hammasi o'z botingiz ichida: karta, holat, «Men to'ladim», bekor qilish. QR kod — faqat to'lov sahifasida.",
+    ref_ph: "Buyurtma raqami / izoh (ixtiyoriy)", mk_btn: "To'lov yaratish", mk_enter: "Summani kiriting (kamida 1 000 so'm)", mk_done: "To'lov yaratildi",
+    mk_until: "Muddat: ",
+    v_own: "💳 Botim ichida", v_page: "🌐 To'lov sahifasi", open: "🔗 Ochish", copy: "📋 Havoladan nusxalash", copied: "Nusxalandi", copy_fail: "Nusxalab bo'lmadi",
+    cx_pay: "❌ Bekor qilish", cx_q: "#{id} to'lovni bekor qilasizmi? QR kod endi ishlamaydi.", cx_ok: "To'lov bekor qilindi", st_cancelled: "bekor qilindi",
+    chk: "🔄 Holatni tekshirish", chk_done: "Holat yangilandi", paid_ok: "✅ To'lov qabul qilindi!", expired: "⌛ Muddati tugadi", prov_link: "Bank havolasi",
+    own_hint: "Sizga karta raqami, holat tekshirish, «Men to'ladim» va to'lov sahifasi havolalari beriladi — hammasini o'z botingizga qo'yasiz. QR kod faqat o'sha sahifada.",
+    own_title: "💳 O'z botingiz uchun", own_page: "🌐 To'lov sahifasi", own_page_qr: "🌐 To'lov sahifasi (QR kod)", own_qr_off: "QR kod bu tarifda yo'q — Start tarifida to'lov faqat karta raqami orqali.", own_qr: "🖼 QR kodni ochish", own_card: "📋 Kartadan nusxalash", own_none_card: "Karta raqami yo'q",
+    own_status: "Holatni tekshirish", own_no_https: "Hozircha HTTPS manzil sozlanmagan — QR va havolalar ishlamaydi, adminga so'rang.",
+    own_claim: "✅ «Men to'ladim» yuborish", own_claimed: "✅ Tasdiq so'rovi adminga yuborildi", own_urls: "Botingizga qo'yiladigan havolalar",
+    own_take: "📋 Matndan nusxalash", own_take_txt: "To'lov: {sum}. Karta: {card}. To'lovni yakunlab «Men to'ladim» bosing.",
+    feats: "Imkoniyatlar", free: "TEKIN", notify_yes: "bildirishnoma bor", notify_no: "bildirishnoma yo'q",
+    promo_on: "🎁 AKSIYA", promo_sub: "hammaga tekin", use_free: "Tekin — tanlang",
+  },
+  ru: {
+    balance: "Баланс", available: "Доступно:", no_sub: "Нет подписки", until: "Срок: ",
+    limit: "Лимит: ", today: "сегодня", tab_hist: "История", tab_wd: "Вывод", tab_tar: "Тарифы",
+    recent_pay: "🧾 Последние платежи", loading: "Загрузка…", no_pays: "Платежей нет",
+    wd_title: "💸 Вывод средств", amount: "Сумма (сум)", send_req: "Отправить заявку", wd_hist: "📜 История выводов",
+    tar_title: "📄 Тарифы", no_wd: "Выводов нет", prof_saved: "Данные карты сохранены.",
+    prof_none: "Сначала добавьте данные карты в боте (раздел «Вывод средств»).",
+    wd_sent: "Заявка отправлена", wd_enter: "Введите сумму", wd_limit: "Превышен дневной лимит",
+    wd_confirm: "Вывод: {sum}. Подтверждаете?", days: "дн.", pays_n: "платежей", cards_n: "карт", unlimited: "без лимита",
+    st_pending: "ожидает", st_paid: "оплачено", st_done: "завершено", st_rejected: "отклонено", som: "сум",
+    tab_docs: "Док.", tab_stats: "Статистика", docs_title: "📚 Документация", docs_hint: "API-документация и страница тарифов — отдельные разделы.",
+    docs_open: "📘 API документация", tar_page: "🌐 Страница тарифов", buy: "Купить", buy_hint: "Выберите тариф и нажмите «Купить» — бот откроется и тариф подключится автоматически.",
+    tab_mk: "Создать платёж", mk_title: "➕ Новый платёж", mk_hint: "Введите сумму — платёж создаётся сразу. Всё внутри вашего бота: карта, статус, «Я оплатил», отмена. QR — только на странице оплаты.",
+    ref_ph: "Номер заказа / комментарий (необязательно)", mk_btn: "Создать платёж", mk_enter: "Введите сумму (минимум 1 000 сум)", mk_done: "Платёж создан",
+    mk_until: "Срок: ",
+    v_own: "💳 В моём боте", v_page: "🌐 Страница оплаты", open: "🔗 Открыть", copy: "📋 Копировать ссылку", copied: "Скопировано", copy_fail: "Не удалось скопировать",
+    cx_pay: "❌ Отменить", cx_q: "Отменить платёж #{id}? QR-код перестанет работать.", cx_ok: "Платёж отменён", st_cancelled: "отменён",
+    chk: "🔄 Проверить статус", chk_done: "Статус обновлён", paid_ok: "✅ Оплата получена!", expired: "⌛ Срок истёк", prov_link: "Ссылка банка",
+    own_hint: "Вы получите номер карты, ссылки на статус, «Я оплатил» и страницу оплаты — вставьте их в своего бота. QR — только на странице оплаты.",
+    own_title: "💳 Для вашего бота", own_page: "🌐 Страница оплаты", own_page_qr: "🌐 Страница оплаты (QR)", own_qr_off: "QR недоступен на этом тарифе — на Start оплата только по номеру карты.", own_qr: "🖼 Открыть QR", own_card: "📋 Копировать карту", own_none_card: "Номер карты отсутствует",
+    own_status: "Проверка статуса", own_no_https: "HTTPS-адрес ещё не настроен — QR и ссылки недоступны, обратитесь к админу.", own_claim: "✅ Отправить «Я оплатил»", own_claimed: "✅ Запрос отправлен админу", own_urls: "Ссылки для вашего бота",
+    own_take: "📋 Копировать текст", own_take_txt: "Оплата: {sum}. Карта: {card}. Завершите оплату и нажмите «Я оплатил».",
+    feats: "Возможности", free: "БЕСПЛАТНО", notify_yes: "уведомления есть", notify_no: "уведомлений нет",
+    promo_on: "🎁 АКЦИЯ", promo_sub: "для всех бесплатно", use_free: "Бесплатно — выбрать",
+  },
+  en: {
+    balance: "Balance", available: "Available:", no_sub: "No subscription", until: "Expires: ",
+    limit: "Limit: ", today: "today", tab_hist: "History", tab_wd: "Withdraw", tab_tar: "Tariffs",
+    recent_pay: "🧾 Recent payments", loading: "Loading…", no_pays: "No payments",
+    wd_title: "💸 Withdrawal", amount: "Amount (UZS)", send_req: "Send request", wd_hist: "📜 Withdrawal history",
+    tar_title: "📄 Tariffs", no_wd: "No withdrawals", prof_saved: "Card details saved.",
+    prof_none: "First add your card details in the bot (Withdraw section).",
+    wd_sent: "Request sent", wd_enter: "Enter an amount", wd_limit: "Exceeds the daily limit",
+    wd_confirm: "Withdraw: {sum}. Confirm?", days: "days", pays_n: "payments", cards_n: "cards", unlimited: "unlimited",
+    st_pending: "pending", st_paid: "paid", st_done: "completed", st_rejected: "rejected", som: "UZS",
+    tab_docs: "Docs", tab_stats: "Stats", docs_title: "📚 Documentation", docs_hint: "API docs and the tariffs page are separate sections.",
+    docs_open: "📘 API documentation", tar_page: "🌐 Tariffs page", buy: "Buy", buy_hint: "Pick a tariff and press “Buy” — the bot opens and the tariff is activated automatically.",
+    tab_mk: "Create payment", mk_title: "➕ New payment", mk_hint: "Enter an amount — the payment is created instantly and everything stays inside your own bot: card, status, \"I paid\", cancel. QR opens only on the payment page.",
+    ref_ph: "Order ref / comment (optional)", mk_btn: "Create payment", mk_enter: "Enter an amount (min 1 000 UZS)", mk_done: "Payment created",
+    mk_until: "Expires: ",
+    v_own: "💳 In my bot", v_page: "🌐 Pay page", open: "🔗 Open", copy: "📋 Copy link", copied: "Copied", copy_fail: "Copy failed",
+    cx_pay: "❌ Cancel", cx_q: "Cancel payment #{id}? The QR code will stop working.", cx_ok: "Payment cancelled", st_cancelled: "cancelled",
+    chk: "🔄 Check status", chk_done: "Status refreshed", paid_ok: "✅ Payment accepted!", expired: "⌛ Expired", prov_link: "Bank link",
+    own_hint: "You get the card number, status, \"I paid\" and payment-page links — put them into your own bot. QR is only on the payment page.",
+    own_title: "💳 For your own bot", own_page: "🌐 Payment page", own_page_qr: "🌐 Payment page (QR)", own_qr_off: "QR is not available on this tariff — Start pays by card number only.", own_qr: "🖼 Open QR", own_card: "📋 Copy card number", own_none_card: "No card number",
+    own_status: "Status check", own_no_https: "No HTTPS address configured yet — QR and links are unavailable, ask the admin.", own_claim: "✅ Send \"I paid\"", own_claimed: "✅ Claim sent to the admin", own_urls: "Links for your bot",
+    own_take: "📋 Copy text", own_take_txt: "Payment: {sum}. Card: {card}. Finish the payment and press \"I paid\".",
+    feats: "Features", free: "FREE", notify_yes: "notifications on", notify_no: "no notifications",
+    promo_on: "🎁 PROMO", promo_sub: "free for everyone", use_free: "Free — choose",
+  },
+  ar: {
+    balance: "الرصيد", available: "المتاح:", no_sub: "لا يوجد اشتراك", until: "تنتهي: ",
+    limit: "الحد: ", today: "اليوم", tab_hist: "السجل", tab_wd: "سحب", tab_tar: "الباقات",
+    recent_pay: "🧾 آخر المدفوعات", loading: "جار التحميل…", no_pays: "لا توجد مدفوعات",
+    wd_title: "💸 سحب الأموال", amount: "المبلغ (سوم)", send_req: "إرسال الطلب", wd_hist: "📜 سجل السحب",
+    tar_title: "📄 الباقات", no_wd: "لا توجد عمليات سحب", prof_saved: "تم حفظ بيانات البطاقة.",
+    prof_none: "أضف بيانات البطاقة أولًا في البوت (قسم سحب الأموال).",
+    wd_sent: "تم إرسال الطلب", wd_enter: "أدخل المبلغ", wd_limit: "يتجاوز الحد اليومي",
+    wd_confirm: "سحب: {sum}. هل تؤكد؟", days: "يوم", pays_n: "مدفوعات", cards_n: "بطاقات", unlimited: "غير محدود",
+    st_pending: "قيد الانتظار", st_paid: "مدفوع", st_done: "مكتمل", st_rejected: "مرفوض", som: "سوم",
+    tab_docs: "المستندات", tab_stats: "الإحصائيات", docs_title: "📚 المستندات", docs_hint: "مستندات API وصفحة الباقات قسمان منفصلان.",
+    docs_open: "📘 مستندات API", tar_page: "🌐 صفحة الباقات", buy: "شراء", buy_hint: "اختر باقة واضغط «شراء» — يُفتح البوت وتُفعّل الباقة تلقائيًا.",
+    tab_mk: "إنشاء دفع", mk_title: "➕ دفع جديد", mk_hint: "أدخل المبلغ — يُنشأ الدفع فورًا وكل شيء داخل بوتك: البطاقة والحالة و«لقد دفعت» والإلغاء. QR يُفتح في صفحة الدفع فقط.",
+    ref_ph: "رقم الطلب / تعليق (اختياري)", mk_btn: "إنشاء الدفع", mk_enter: "أدخل المبلغ (الحد الأدنى 1000 سوم)", mk_done: "تم إنشاء الدفع",
+    mk_until: "المدة: ",
+    v_own: "💳 داخل بوتك", v_page: "🌐 صفحة الدفع", open: "🔗 فتح", copy: "📋 نسخ الرابط", copied: "تم النسخ", copy_fail: "لم يتم النسخ",
+    cx_pay: "❌ إلغاء", cx_q: "إلغاء الدفع #{id}? رمز QR لن يعمل بعد الآن.", cx_ok: "تم إلغاء الدفع", st_cancelled: "ملغي",
+    chk: "🔄 فحص الحالة", chk_done: "تم تحديث الحالة", paid_ok: "✅ تم قبول الدفع!", expired: "⌛ انتهت المدة", prov_link: "رابط البنك",
+    own_hint: "ستحصل على رقم البطاقة وروابط الحالة و«لقد دفعت» وصفحة الدفع — ضعها في بوتك. QR يظهر في صفحة الدفع فقط.",
+    own_title: "💳 لبوتك الخاص", own_page: "🌐 صفحة الدفع", own_page_qr: "🌐 صفحة الدفع (QR)", own_qr_off: "رمز QR غير متاح في هذا الاشتراك — في Start الدفع برقم البطاقة فقط.", own_qr: "🖼 فتح QR", own_card: "📋 نسخ رقم البطاقة", own_none_card: "لا يوجد رقم بطاقة",
+    own_status: "فحص الحالة", own_no_https: "لم يتم ضبط عنوان HTTPS بعد — QR والروابط غير متاحة، راجع المسؤول.", own_claim: "✅ إرسال «لقد دفعت»", own_claimed: "✅ تم إرسال الطلب إلى المسؤول", own_urls: "روابط لبوتك",
+    own_take: "📋 نسخ النص", own_take_txt: "المبلغ: {sum}. البطاقة: {card}. أكمل الدفع واضغط «لقد دفعت».",
+    feats: "الميزات", free: "مجاني", notify_yes: "الإشعارات مفعلة", notify_no: "لا إشعارات",
+    promo_on: "🎁 عرض خاص", promo_sub: "مجاني للجميع", use_free: "مجاني — اختر",
+  }
+};
+function pickLang() {
+  const c = ((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || "uz").slice(0, 2).toLowerCase();
+  return I18N[c] ? c : "uz";
+}
+let LANG = pickLang();
+function t(k, v) {
+  let s = (I18N[LANG] && I18N[LANG][k]) || I18N.uz[k] || k;
+  if (v) Object.keys(v).forEach(x => { s = s.split("{" + x + "}").join(v[x]); });
+  return s;
+}
+function applyI18n() {
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.getAttribute("data-i18n-ph")); });
+}
+applyI18n();
+document.getElementById('who').textContent = ME.first_name ? (ME.first_name + (ME.username ? ' @' + ME.username : '')) : '';
+
+function toast(msg, err) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'on' + (err ? ' err' : '');
+  setTimeout(() => { el.className = ''; }, 1800);
+}
+function money(n) { return (Number(n) || 0).toLocaleString('ru-RU').replace(/\u00a0/g, ' ') + " " + t('som'); }
+function dshort(s) { return s ? s.slice(8, 10) + '.' + s.slice(5, 7) + ' ' + s.slice(11, 16) : '—'; }
+function dsub(s) { return s ? s.slice(0, 10).split('-').reverse().join('.') : '—'; }
+async function api(path, opt) {
+  const r = await fetch(APIB + path, Object.assign({headers: H, cache: 'no-store'}, opt || {}));
+  let d = {};
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
+  return d;
+}
+const ST = {paid: '✅', waiting: '⏳', expired: '⌛', failed: '❌', cancelled: '🚫'};
+const WCLS = {pending: 'wait', paid: 'wait', done: 'ok', rejected: 'bad'};
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])); }
+function pst(s) { return {paid: t('st_paid'), waiting: t('st_pending'), cancelled: t('st_cancelled'), expired: t('expired')}[s] || s; }
+
+function show(id) {
+  ['hist', 'wd', 'tarcard', 'docs', 'mk'].forEach(x => document.getElementById(x).classList.toggle('hidden', x !== id));
+  if (id === 'tarcard') loadTariffs();
+}
+
+function openLink(u) {
+  if (!u) return;
+  const w = window.Telegram ? Telegram.WebApp : null;
+  if (w && w.openTelegramLink && u.indexOf('t.me/') > -1) w.openTelegramLink(u);
+  else if (w && w.openLink) w.openLink(u);
+  else window.open(u, '_blank');
+}
+function buyTariff(id) { openLink('https://t.me/' + BOT + '?start=buy_' + id); }
+
+async function loadMe() {
+  const d = await api('/api/app/me');
+  window.__me = d;
+  if (d.lang && I18N[d.lang] && d.lang !== LANG) { LANG = d.lang; applyI18n(); }
+  document.getElementById('bal').textContent = money(d.balance);
+  document.getElementById('avail').textContent = money(d.available);
+  document.getElementById('tar').textContent = d.tariff || t('no_sub');
+  document.getElementById('sub').textContent = d.sub_until ? (t('until') + dsub(d.sub_until)) : t('no_sub');
+  document.getElementById('lim').textContent = d.wd_day_limit ? (t('limit') + money(d.wd_day_limit) + ' · ' + t('today') + ' ' + money(d.wd_today)) : '';
+  document.getElementById('opin').textContent = d.has_prof ? t('prof_saved') : t('prof_none');
+  document.getElementById('wbtn').disabled = !d.has_prof;
+  const dl = document.getElementById('docs_link'), tl = document.getElementById('tar_link');
+  dl.href = d.docs || '#'; dl.onclick = e => { e.preventDefault(); openLink(d.docs); };
+  tl.href = d.tar_url || '#'; tl.onclick = e => { e.preventDefault(); openLink(d.tar_url); };
+}
+
+async function loadPayments() {
+  const rows = await api('/api/app/payments');
+  window.__pays = rows;
+  if (!LAST) LAST = rows.find(r => r.status === 'waiting') || null;
+  rows.forEach(r => { if (LAST && r.payment_id === LAST.payment_id) LAST = r; });
+  document.getElementById('plist').innerHTML = rows.length ? rows.map(r => {
+    const w = r.status === 'waiting';
+    return `<div class="titem"><div class="trow"><div>${ST[r.status] || '•'} #${r.payment_id} · ${esc(r.order_ref || '—')}</div><div>${money(r.pay_amount)}</div></div>` +
+      `<div class="s">${dshort(r.created_at)} · <span class="${w ? 'wait' : (r.status === 'paid' ? 'ok' : 'bad')}">${pst(r.status)}</span>${w ? ' · ' + t('mk_until') + dshort(r.expires_at) : ''}</div>` +
+      `<div class="btns">` +
+      (w ? `<button class="mini" onclick="pick(${r.payment_id})">${t('v_own')}</button>` +
+           (r.pay_page ? `<button class="mini sec" onclick="openLink('${esc(r.pay_page)}')">${t('v_page')}</button>` : '') +
+           `<button class="mini dng" onclick="cxPay(${r.payment_id})">${t('cx_pay')}</button>`
+        : `<button class="mini sec" onclick="pick(${r.payment_id})">${t('open')} →</button>`) +
+      `</div></div>`;
+  }).join('') : `<div class="empty">${t('no_pays')}</div>`;
+  if (LAST) drawPay();
+}
+
+/* ---------- To'lov yaratish: hammasi o'z boti ichida + holat/bekor qilish ---------- */
+const QC = [10000, 20000, 50000, 100000];
+let LAST = null, PT = null;
+
+function renderChips() {
+  document.getElementById('pchips').innerHTML = QC.map(a =>
+    `<span class="chip" onclick="document.getElementById('pamt').value=${a}">${a.toLocaleString('ru-RU').replace(/\u00a0/g, ' ')}</span>`).join('');
+}
+
+async function mkPay() {
+  const v = parseInt(document.getElementById('pamt').value || '0', 10);
+  if (!v || v < 1000) return toast(t('mk_enter'), true);
+  const b = document.getElementById('pbtn');
+  b.disabled = true;
+  try {
+    const ref = document.getElementById('pref').value.trim();
+    LAST = await api('/api/app/payments', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, H),
+      body: JSON.stringify({amount: v, order_ref: ref || ('app-' + Date.now())})});
+    document.getElementById('pamt').value = '';
+    document.getElementById('pref').value = '';
+    toast(t('mk_done'));
+    drawPay(); startPoll(); loadPayments(); loadMe();
+  } catch (e) { toast(e.message, true); }
+  b.disabled = false;
+}
+
+function meth(p, kind) {
+  const m = (p.pay_methods || []).find(x => x.type === kind);
+  return m ? m.url : null;
+}
+
+function ownBox(o) {
+  const card = o.card_number ? `<div class="mtx">${esc(o.card_number)}</div><button class="cp" onclick="copyTxt('${esc(o.card_number)}')">${t('own_card')}</button>` : '';
+  const urls = [['status_url', 'own_status'], ['claim_url', 'own_claim'], ['cancel_url', 'cx_pay'], ['page_url', 'own_page']]
+    .filter(x => o[x[0]]).map(x =>
+      `<div><b>${t(x[1])}</b>: <span onclick="copyTxt('${esc(o[x[0]])}')">${esc(o[x[0]])}</span></div>`).join('');
+  const page = o.page_url
+    ? `<div class="vrow"><button class="sec" onclick="openLink('${esc(o.page_url)}')">${o.qr_available ? t('own_page_qr') : t('own_page')}</button>` +
+      `<button class="cp" onclick="copyTxt('${esc(o.page_url)}')">${t('copy')}</button></div>`
+    : `<div class="hint">${t('own_no_https')}</div>`;
+  const note = o.page_url && !o.qr_available ? `<div class="hint">${t('own_qr_off')}</div>` : '';
+  return `<div class="ttl" style="margin-top:14px"><span>${t('own_title')}</span></div>` +
+    card +
+    (o.claim_url && o.card_number ? `<div class="vrow"><button class="sec" onclick="claimPay()">${t('own_claim')}</button></div>` : '') +
+    page + note + (urls ? `<div class="code">${urls}</div>` : '');
+}
+
+async function claimPay() {
+  const u = LAST && (LAST.claim_url || (LAST.own_bot || {}).claim_url);
+  if (!u) return toast(t('own_none_card'), true);
+  try { const d = await api(u, {method: 'POST'}); toast(d.message || t('own_claimed')); } catch (e) { toast(e.message, true); }
+}
+
+function drawPay() {
+  const el = document.getElementById('pout');
+  if (!LAST) { el.innerHTML = ''; return; }
+  const page = LAST.pay_page, prov = meth(LAST, 'provider_link'), own = LAST.own_bot || {};
+  const w = LAST.status === 'waiting';
+  let h = `<div class="pbox"><div class="ttl"><span>${ST[LAST.status] || '•'} #${LAST.payment_id}</span><span class="pill">${pst(LAST.status)}</span></div>` +
+    `<div class="ref">${esc(LAST.order_ref || '')}</div><div class="big">${money(LAST.pay_amount)}</div>` +
+    (w ? `<div class="exp">${t('mk_until')}${dshort(LAST.expires_at)}</div>` : '');
+  if (w) {
+    h += ownBox(own) +
+      `<div class="vrow"><button class="sec" onclick="checkPay()">${t('chk')}</button><button class="dng" onclick="cxPay(${LAST.payment_id})">${t('cx_pay')}</button></div>`;
+    if (page) h += `<div class="vrow"><button class="sec" onclick="openLink('${esc(page)}')">${t('v_page')}</button>` +
+      `<button class="cp" onclick="copyTxt('${esc(page)}')">${t('copy')}</button></div>`;
+  } else if (page) h += `<div class="vrow"><button class="sec" onclick="openLink('${esc(page)}')">${t('open')} →</button></div>`;
+  if (prov) h += `<div class="link">${t('prov_link')}: <a href="${esc(prov)}" target="_blank">${esc(prov)}</a></div>`;
+  el.innerHTML = h + `<div class="hint">${t('own_hint')}</div></div>`;
+}
+
+function pick(id) {
+  const r = (window.__pays || []).find(x => x.payment_id === id);
+  if (!r) return;
+  LAST = r; show('mk'); drawPay();
+  if (LAST.status === 'waiting') startPoll();
+}
+
+async function pollPay(silent) {
+  if (!LAST || LAST.status !== 'waiting') return;
+  let rows;
+  try { rows = await api('/api/app/payments'); } catch (e) { return; }
+  window.__pays = rows;
+  const r = rows.find(x => x.payment_id === LAST.payment_id);
+  if (!r || r.status === LAST.status) { if (!silent) toast(t('chk_done')); if (r) loadPayments(); return; }
+  LAST = r; drawPay(); loadPayments();
+  if (r.status === 'paid') {
+    toast(t('paid_ok'));
+    if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    loadMe();
+  } else if (r.status === 'cancelled') toast(t('cx_ok'), true);
+  else if (r.status === 'expired') toast(t('expired'), true);
+}
+
+function startPoll() {
+  if (PT) return;
+  PT = setInterval(() => { if (!LAST || LAST.status !== 'waiting') { clearInterval(PT); PT = null; return; } pollPay(true); }, 6000);
+}
+
+function checkPay() { pollPay(false); }
+
+function cxPay(id) {
+  const pid = id || (LAST && LAST.payment_id);
+  if (!pid) return;
+  const q = t('cx_q', {id: pid});
+  if (tg && tg.showConfirm) tg.showConfirm(q, ok => { if (ok) sendCx(pid); });
+  else if (confirm(q)) sendCx(pid);
+}
+
+async function sendCx(pid) {
+  try {
+    LAST = await api('/api/app/payments/' + pid + '/cancel', {method: 'POST'});
+    toast(t('cx_ok'), true);
+    drawPay(); loadPayments();
+  } catch (e) { toast(e.message, true); loadPayments(); }
+}
+
+function copyTxt(u) {
+  if (!u) return;
+  const ok = () => toast(t('copied'));
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, () => toast(t('copy_fail'), true));
+  else {
+    const i = document.createElement('textarea');
+    i.value = u; document.body.appendChild(i); i.select();
+    try { document.execCommand('copy'); ok(); } catch (e) { toast(t('copy_fail'), true); }
+    i.remove();
+  }
+}
+
+async function loadWithdrawals() {
+  const rows = await api('/api/app/withdrawals');
+  document.getElementById('wlist').innerHTML = rows.length ? rows.map(r =>
+    `<div class="row"><div><div>#${r.id} · ${money(r.amount)}</div><div class="s">${dshort(r.created)}</div></div><div><span class="${WCLS[r.status] || 'wait'}">${t('st_' + r.status) || r.status}</span></div></div>`
+  ).join('') : `<div class="empty">${t('no_wd')}</div>`;
+}
+
+async function loadTariffs() {
+  const rows = await api('/api/public/tariffs');
+  const pr = rows.find(x => x.free);
+  document.getElementById('promobox').innerHTML = pr
+    ? `<div class="promo"><span class="ic">🎁</span><span><b>${t('promo_on')}</b> — ${esc(pr.promo_tariff || pr.name)} ${t('promo_sub')}, ${t('mk_until')}${dshort(pr.promo_until)}</span></div>` : '';
+  document.getElementById('tlist').innerHTML = rows.length ? rows.map(x => {
+    const fs = (x.features || []).filter(f => f && !/^(💳|⚡️|♾|🔔)/.test(f));
+    return `<div class="titem"><div class="trow"><div>${esc(x.name)}${x.free ? `<span class="free">${t('free')}</span>` : ''}</div>` +
+      `<div>${x.free ? t('free') : money(x.price)}</div></div>` +
+      `<div class="s">${x.days} ${t('days')} · ${x.tx_limit ? x.tx_limit + ' ' + t('pays_n') : t('unlimited')} · ${x.cards} ${t('cards_n')} · ${x.notify ? t('notify_yes') : t('notify_no')}</div>` +
+      (fs.length ? `<details class="tf"><summary>${t('feats')}</summary><ul class="tfeat">${fs.map(f => `<li>${esc(f)}</li>`).join('')}</ul></details>` : '') +
+      `<button class="mini" onclick="buyTariff(${x.id})">${x.free ? t('use_free') : t('buy')} →</button></div>`;
+  }).join('') : '<div class="empty">—</div>';
+}
+
+async function sendWithdraw(v) {
+  try {
+    await api('/api/app/withdraw', {method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, H), body: JSON.stringify({amount: v})});
+    toast(t('wd_sent'));
+    document.getElementById('amt').value = '';
+    loadMe(); loadWithdrawals();
+  } catch (e) { toast(e.message, true); }
+}
+
+function doWithdraw() {
+  const v = parseInt(document.getElementById('amt').value || '0', 10);
+  if (!v || v < 1) return toast(t('wd_enter'), true);
+  const me = window.__me || {};
+  if (me.wd_day_limit && (me.wd_today + v) > me.wd_day_limit) return toast(t('wd_limit'), true);
+  const q = t('wd_confirm', {sum: money(v)});
+  if (tg && tg.showConfirm) tg.showConfirm(q, ok => { if (ok) sendWithdraw(v); });
+  else sendWithdraw(v);
+}
+
+renderChips();
+loadTariffs();
+if (INIT) {
+  loadMe().then(() => { loadPayments(); loadWithdrawals(); }).catch(e => toast(e.message, true));
+  setInterval(loadMe, 15000);
+  setInterval(() => { if (!LAST || LAST.status === 'waiting') pollPay(true); }, 12000);
+} else {
+  document.getElementById('docs_link').href = '/docs';
+  document.getElementById('tar_link').href = '/tariflar';
+}
+</script>
+
+<script>
+/* v3.7 — animatsiya qatlami */
+(function(){
+  const RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if (!RM) {
+    document.addEventListener('click', ev => {
+      const b = ev.target.closest('button:not(:disabled)');
+      if (!b) return;
+      const k = Math.max(b.offsetWidth, b.offsetHeight), r = document.createElement('span'), rc = b.getBoundingClientRect();
+      r.className = 'rip'; r.style.width = r.style.height = k + 'px';
+      r.style.left = (ev.clientX - rc.left - k / 2) + 'px'; r.style.top = (ev.clientY - rc.top - k / 2) + 'px';
+      b.appendChild(r); setTimeout(() => r.remove(), 620);
+    });
+  }
+  const _show = window.show;
+  if (typeof _show === 'function') {
+    window.show = function (id) {
+      _show(id);
+      const el = document.getElementById(id);
+      if (el && !RM) { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+    };
+  }
+  function animNum(el) {
+    if (!el) return;
+    const txt = el.textContent || '';
+    const m = txt.match(/([\d\s ,.]+)(.*)$/);
+    if (!m) return;
+    const to = parseInt(m[1].replace(/[^\d]/g, ''), 10);
+    const from = parseInt(String(el.dataset.v || '0').replace(/[^\d]/g, ''), 10);
+    el.dataset.v = m[1];
+    if (RM || !isFinite(to) || to === from) return;
+    const t0 = performance.now(), D = 650;
+    (function f(t) {
+      const k = Math.min(1, (t - t0) / D), v = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      el.textContent = v.toLocaleString('ru-RU').replace(/ /g, ' ') + m[2];
+      if (k < 1) requestAnimationFrame(f);
+    })(performance.now());
+  }
+  ['bal', 'avail'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    new MutationObserver(() => animNum(el)).observe(el, {childList: true, subtree: true, characterData: true});
+  });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold: .12});
+  document.querySelectorAll('.card,.tile').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>

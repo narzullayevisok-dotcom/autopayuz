@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoPayuz — To'lov API</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#10131a;--mu:#667085;--bd:#e4e7ee;--ac:#4f46e5;--ac2:#06b6d4;--code:#0f172a;--ok:#16a34a}
+@media(prefers-color-scheme:dark){:root{--bg:#0b0e14;--card:#131824;--tx:#eef1f7;--mu:#8b94a7;--bd:#222a3a;--code:#070a10}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font:16px/1.65 Inter,system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}
+a{color:var(--ac);text-decoration:none}nav{position:sticky;top:0;z-index:9;display:flex;gap:6px;align-items:center;padding:12px 5vw;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd)}
+nav b{font-size:19px;margin-right:auto;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
+nav a{color:var(--tx);padding:7px 14px;border-radius:10px;font-weight:600;font-size:14px}nav a:hover{background:var(--bd)}nav a.cta{background:var(--ac);color:#fff}
+.hero{text-align:center;padding:50px 5vw 10px;background:radial-gradient(60% 80% at 50% 0,color-mix(in srgb,var(--ac) 22%,transparent),transparent)}
+.hero h1{font-size:clamp(32px,6vw,58px);line-height:1.1;margin:0 0 16px;letter-spacing:-1.5px}.hero h1 span{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
+.hero p{max-width:640px;margin:0 auto 28px;color:var(--mu);font-size:18px}.btn{display:inline-block;padding:13px 26px;border-radius:12px;font-weight:700;border:1px solid var(--bd);color:var(--tx);background:var(--card);margin:4px}
+.btn.p{background:linear-gradient(90deg,var(--ac),#7c3aed);color:#fff;border:0;box-shadow:0 8px 24px color-mix(in srgb,var(--ac) 40%,transparent)}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:1100px;margin:30px auto;padding:0 5vw}
+.feat div{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px}.feat i{font-style:normal;font-size:26px}.feat h4{margin:8px 0 4px}.feat p{margin:0;color:var(--mu);font-size:14px}
+section{max-width:1150px;margin:0 auto;padding:60px 5vw}h2{font-size:34px;letter-spacing:-1px;margin:0 0 6px}.sub{color:var(--mu);margin:0 0 30px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.pc{position:relative;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:26px;display:flex;flex-direction:column;transition:.2s}.pc:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(79,70,229,.15)}
+.pc.hot{border:2px solid var(--ac)}.badge{position:absolute;top:-12px;right:18px;background:var(--ac);color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px}
+.pc h3{margin:0;font-size:20px}.price{font-size:34px;font-weight:800;margin:10px 0 2px;letter-spacing:-1px}.price small{font-size:14px;color:var(--mu);font-weight:500}
+.pc ul{list-style:none;padding:0;margin:16px 0 22px;flex:1}.pc li{padding:5px 0;font-size:14.5px;border-bottom:1px dashed var(--bd)}.pc li:last-child{border:0}.pc li:before{content:"✓ ";color:var(--ok);font-weight:800}
+.pc .btn{text-align:center;margin:0}
+.docs{display:grid;grid-template-columns:230px 1fr;gap:40px;max-width:1250px;margin:0 auto;padding:40px 5vw}
+.side{position:sticky;top:76px;align-self:start;max-height:80vh;overflow:auto}.side a{display:block;padding:6px 12px;color:var(--mu);border-left:2px solid var(--bd);font-size:14.5px}.side a:hover{color:var(--ac);border-color:var(--ac)}
+.doc h2{margin-top:50px;padding-top:10px}.doc h3{margin-top:28px}.doc p,.doc li{color:var(--mu)}.doc code{background:var(--bd);padding:2px 7px;border-radius:6px;font-size:13.5px;color:var(--tx)}
+pre{background:var(--code);color:#e2e8f0;padding:18px;border-radius:14px;overflow:auto;font-size:13.5px;line-height:1.55;position:relative}pre code{background:none;color:inherit;padding:0}
+.cp{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#fff;border:0;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:12px}
+.tabs button{background:var(--card);border:1px solid var(--bd);color:var(--tx);padding:6px 14px;border-radius:9px 9px 0 0;cursor:pointer;font-weight:600}.tabs button.on{background:var(--code);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin:12px 0;background:var(--card);border-radius:12px;overflow:hidden}th,td{padding:10px 14px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{background:var(--bd)}
+.m{display:inline-block;padding:2px 10px;border-radius:7px;color:#fff;font-weight:800;font-size:12.5px;margin-right:8px}.G{background:#0ea5e9}.P{background:#16a34a}
+.note{border-left:4px solid var(--ac);background:color-mix(in srgb,var(--ac) 9%,transparent);padding:12px 16px;border-radius:0 12px 12px 0;margin:16px 0}
+footer{text-align:center;color:var(--mu);padding:40px;border-top:1px solid var(--bd)}
+@media(max-width:800px){.docs{grid-template-columns:1fr}.side{display:none}}
+/* --- v3.7: pro animatsiyalar --- */
+.hero:before{content:"";position:absolute;left:0;right:0;top:0;height:340px;z-index:-1;background:
+ radial-gradient(40% 40% at 20% 0,color-mix(in srgb,var(--ac) 26%,transparent),transparent 65%),
+ radial-gradient(38% 38% at 82% 8%,color-mix(in srgb,var(--ac2) 22%,transparent),transparent 62%);
+ animation:aurora 18s ease-in-out infinite alternate}
+.hero{position:relative;overflow:hidden}
+@keyframes aurora{0%{transform:translate3d(-2%,-1%,0) scale(1)}100%{transform:translate3d(2%,2%,0) scale(1.1)}}
+.hero h1 span{background-size:220% 100%;animation:gsh 6s linear infinite}
+@keyframes gsh{to{background-position:-220% 0}}
+nav{transition:box-shadow .3s}nav.st{box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.doc h2:not(.rv),.doc h3:not(.rv),.doc p:not(.rv),.doc table:not(.rv),.doc pre:not(.rv),.doc .note:not(.rv){opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.9,.25,1)}
+tbody tr{transition:background .2s}tbody tr:hover{background:color-mix(in srgb,var(--ac) 7%,transparent)}
+pre{transition:box-shadow .3s,transform .3s}pre:hover{box-shadow:0 16px 36px rgba(0,0,0,.22)}
+.cp{position:relative;overflow:hidden;transition:background .2s,transform .2s}.cp:hover{background:#ffffff33;transform:translateY(-1px)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.4);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(3);opacity:0}}
+.tabs button{transition:transform .2s,background .2s,color .2s}.tabs button:hover{transform:translateY(-2px)}
+.btn{transition:transform .2s,box-shadow .25s}.btn:hover{transform:translateY(-2px)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}.doc h2,.doc h3,.doc p,.doc table,.doc pre,.doc .note{opacity:1!important;transform:none!important}}
+</style></head><body>
+<nav><b>⚡ AutoPayuz</b><a href="#docs">API Docs</a><a href="tariflar.html">Tariflar</a><a href="stats.html">Statistika</a><a class="cta" href="https://t.me/autopayuz_robot" target="_blank">@autopayuz_robot</a></nav>
+
+<div class="hero"><h1><span>API Docs</span></h1><p>REST + JSON · avtomatik tasdiq · imzolangan webhook</p></div>
+
+<div id="docs"></div>
+<div class="docs"><aside class="side" id="side"></aside><main class="doc" id="doc"></main></div>
+<footer>© AutoPayuz</footer>
+
+<script>
+const BOT="autopayuz_robot";
+// Sahifa boshqa domenda (masalan GitHub Pages) tursa: ?api=https://BACKEND bir marta ochilsa, keyin esda qoladi
+const API_DEFAULT="https://translated-viruses-contributing-eat.trycloudflare.com";
+const APIB=(()=>{const q=new URLSearchParams(location.search).get('api');
+  if(q){try{localStorage.setItem('ap_api',q)}catch(e){}return q.replace(/\/+$/,'')}
+  try{return (localStorage.getItem('ap_api')||API_DEFAULT).replace(/\/+$/,'')}catch(e){return API_DEFAULT}})();
+const BASE=(APIB||location.origin)+"/api/v1";
+if(APIB)document.querySelectorAll('a[href^="/"]').forEach(a=>a.href=APIB+a.getAttribute('href'));
+const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g," ");
+const C=(l,s)=>`<pre><button class="cp" onclick="cp(this)">Nusxa</button><code>${s.replace(/</g,'&lt;')}</code></pre>`;
+const S=[["Boshlash","start"],["Autentifikatsiya","auth"],["To'lov yaratish","create"],["O'z botingizda to'lash","own"],["To'lovni olish","get"],["Bekor qilish","cancel"],["Ro'yxat, kartalar, obuna","more"],["Webhook","wh"],["Holatlar","st"],["Xatolar","err"]];
+side.innerHTML=S.map(s=>`<a href="#${s[1]}">${s[0]}</a>`).join("");
+const pay=`{
+  "payment_id": 123, "order_ref": "A1", "status": "waiting",
+  "amount": 50000, "pay_amount": 50000,
+  "card_number": "8600123412341234", "card_last4": "1234",
+  "pay_mode": "own_bot",
+  "pay_page": "https://saytingiz/pay/123",
+  "qr_available": true,
+  "pay_methods": [
+    {"type": "card_text", "url": null, "card": "8600123412341234", "qr": false,
+     "hint": "Karta raqami + summani matn qilib mijozga yuboring (own_bot.text tayyor)"},
+    {"type": "payment_page", "url": "https://saytingiz/pay/123", "qr": true,
+     "hint": "To'lov sahifasi: QR kod, karta, «✅ Men to'ladim», holat va bekor qilish"},
+    {"type": "status_poll", "url": "https://saytingiz/api/public/pay/123", "qr": false,
+     "hint": "Har 3-5 soniyada GET: status=paid bo'lsa to'lov qabul qilindi"},
+    {"type": "claimed", "url": "https://saytingiz/api/public/pay/123/claim", "qr": false,
+     "hint": "«✅ To'ladim» tugmasi bosilganda POST (qo'lda to'lov rejimida)"},
+    {"type": "cancel", "url": "https://saytingiz/api/public/pay/123/cancel", "qr": false,
+     "hint": "«❌ Bekor qilish» tugmasi uchun POST"}
+  ],
+  "own_bot": {
+    "page_url": "https://saytingiz/pay/123", "qr_available": true,
+    "card_number": "8600123412341234",
+    "text": "💳 To'lov #123\\nSumma: 50 000 so'm\\nKarta: 8600123412341234",
+    "status_url": "https://saytingiz/api/public/pay/123",
+    "claim_url": "https://saytingiz/api/public/pay/123/claim",
+    "cancel_url": "https://saytingiz/api/public/pay/123/cancel",
+    "paid_text": "✅ To'lov #123 qabul qilindi! Summa qabul qiluvchiga tushdi",
+    "steps": ["1) POST /api/v1/payments", "2) own_bot.text (karta + summa) ni mijozga yuboring",
+              "3) «Men to'ladim» bossa claim_url ga POST", "4) status_url ni 3-5 soniyada bir tekshiring",
+              "5) Kerak bo'lmasa cancel_url bilan bekor qiling",
+              "QR kerak bo'lsa mijozni page_url ga yo'naltiring"]
+  },
+  "status_url": "https://saytingiz/api/public/pay/123",
+  "cancel_url": "https://saytingiz/api/v1/payments/123/cancel",
+  "client_user_id": "777", "client_user_data": {"username": "sats"},
+  "created_at": "2026-10-29 12:00:00", "expires_at": "2026-10-29 12:10:00", "paid_at": null
+}`;
+doc.innerHTML=`
+<h2 id="start">Boshlash</h2><p>API <b>REST + JSON</b>. Asosiy manzil: <code>${BASE}</code></p>
+<ol><li>Botda tarif oling: <a href="https://t.me/${BOT}">@${BOT}</a></li><li>🔑 <b>API kalit</b> bo'limidan kalit va webhook sirini oling</li><li>💳 Kartangizni qo'shing</li><li>To'lov yarating 👇</li></ol>
+<div class="tabs" id="tb"></div><div id="tc"></div>
+<h2 id="auth">Autentifikatsiya</h2><p>Har bir so'rovga sarlavha qo'shing:</p>${C("","X-API-Key: ap_xxxxxxxxxxxxxxxxxxxxxxxx")}
+<div class="note">Kalitni faqat serveringizda saqlang. Tezlik chegarasi: <b>60 so'rov / daqiqa</b>.</div>
+<h2 id="create">To'lov yaratish</h2><p><span class="m P">POST</span><code>/payments</code></p>
+<table><tr><th>Maydon</th><th>Tur</th><th>Tavsif</th></tr>
+<tr><td><code>amount</code></td><td>int *</td><td>1 000 – 50 000 000 so'm, butun son</td></tr>
+<tr><td><code>order_ref</code></td><td>string</td><td>Buyurtma raqami (≤64). Takroriy so'rovda xuddi shu to'lov qaytadi (idempotent)</td></tr>
+<tr><td><code>description</code></td><td>string</td><td>Izoh (≤200)</td></tr>
+<tr><td><code>client_user_id</code></td><td>string</td><td>Mijoz ID. Yangi to'lov ochilsa, uning eski kutilayotgan to'lovi bekor bo'ladi</td></tr>
+<tr><td><code>client_user_data</code></td><td>object</td><td>Mijoz haqida ma'lumot, masalan <code>{"username":"sats"}</code></td></tr>
+<tr><td><code>card_id</code></td><td>int</td><td>Qaysi kartaga qabul qilish (ixtiyoriy)</td></tr>
+<tr><td><code>webhook_url</code></td><td>string</td><td>Faqat <code>https://</code>. Bo'sh bo'lsa, umumiy webhook ishlatiladi</td></tr></table>
+<p>Javob (<code>200</code>) — <b>hammasi o'z botingiz ichida</b>:</p>${C("",pay)}
+<div class="note">⚠️ Mijoz <b>aynan <code>pay_amount</code></b> summasini o'tkazishi kerak. Boshqa summa qabul qilinmaydi. To'lov uchun <b>10 daqiqa</b> beriladi, keyin <code>expired</code> bo'ladi. Shu summada boshqa ochiq to'lov bo'lsa, <code>pay_amount</code> bir necha so'mga ko'p bo'lishi mumkin.</div>
+<h2 id="own">To'lov — <b>O'Z BOTINGIZ</b> ichida</h2>
+<p>API orqali yaratilgan to'lov mijozni AutoPayuzga olib ketmaydi. Javobda <code>own_bot</code> bloki va <code>pay_methods</code> ro'yxati keladi: <b>karta raqami, holat so'rash, «Men to'ladim» (tasdiq shu botning ichida), bekor qilish va to'lov sahifasi</b> URL'lari. Barcha <code>/api/public/…</code> manzillari kalitsiz ishlaydi — o'z botingizda to'g'ridan-to'g'ri ko'rsatasiz, to'lov tushishi bilan <code>payment.paid</code> webhook keladi.</p>
+<div class="note">📱 <b>QR kod faqat to'lov sahifasida</b> (<code>/pay/{id}</code>) ochiladi — bot xabarlarida QR rasmi berilmaydi. <b>Start</b> tarifida QR umuman yo'q: mijoz faqat karta raqami orqali to'laydi (<code>qr_available:false</code>).</div>
+<table><tr><th>Maydon</th><th>Ma'nosi</th></tr>
+<tr><td><code>own_bot.qr_available</code></td><td><code>true</code> — QR kod to'lov sahifasida ochiladi; <code>false</code> — bu tarifda (Start) QR yo'q, faqat karta</td></tr>
+<tr><td><code>own_bot.card_number</code></td><td>Qabul qiluvchi karta raqami — matn ko'rinishida ham yuborish mumkin</td></tr>
+<tr><td><code>own_bot.text</code></td><td>Tayyor o'zbekcha xabar matni (Telegram HTML): summa, karta, yo'riqnoma</td></tr>
+<tr><td><code>own_bot.status_url</code></td><td>Har 3–5 soniyada <span class="m G">GET</span> — <code>status:"paid"</code> bo'lsa xizmatni oching</td></tr>
+<tr><td><code>own_bot.claim_url</code></td><td><span class="m P">POST</span> — mijoz «Men to'ladim» tugmasini bosganda adminga tekshirish so'rovi yuboriladi (faqat qo'lda to'lov rejimida)</td></tr>
+<tr><td><code>own_bot.cancel_url</code></td><td><span class="m P">POST</span> — mijoz voz kechsa to'lovni bekor qiladi (kalitsiz, <code>/api/v1/payments/{id}/cancel</code> o'rniga ham ishlatasiz)</td></tr>
+<tr><td><code>pay_methods[].hint</code></td><td>Mijozga ko'rsatish uchun tayyor o'zbekcha matn</td></tr>
+<tr><td><code>own_bot.page_url</code> / <code>pay_page</code></td><td><b>To'lov sahifasi</b> <code>/pay/123</code>: QR kod (Start'dan yuqorida), taymer, karta, «✅ Men to'ladim», «🔄 Holatni yangilash» va «❌ Bekor qilish» tugmalari</td></tr>
+<tr><td><code>own_bot.paid_text</code></td><td><code>status:"paid"</code> bo'lganda mijozingizga o'z botingizda ko'rsatadigan tayyor tasdiq matni</td></tr>
+<tr><td><code>own_bot.steps</code></td><td>5 qadamlik tayyor yo'riqnoma — botingiz kodi uchun shablon</td></tr></table>
+${C("curl",`# 1) to'lov yaratish\ncurl -X POST ${BASE}/payments -H "X-API-Key: ap_..." -H "Content-Type: application/json" \\\n  -d '{"amount":50000,"order_ref":"A1"}'\n\n# 2) javobdagi own_bot.text ni (karta + summa) mijozga yuboring\n\n# 3) holatni kuzating (3-5 soniyada bir):\ncurl https://saytingiz/api/public/pay/123\n\n# 4) mijoz «Men to'ladim» bossa (faqat qo'lda to'lov rejimida):\ncurl -X POST https://saytingiz/api/public/pay/123/claim\n\n# 5) voz kechsa:\ncurl -X POST https://saytingiz/api/public/pay/123/cancel`)}
+<div class="note">Avtomatik provayder ulang bo'lsa (<code>claim_url</code> <code>null</code>) to'lov o'z-o'zidan tekshiriladi — faqat <code>status_url</code> ni kuzatishingiz kifoya. Mini App → «➕ To'lov yaratish» bo'limi ham xuddi shu ma'lumotlarni ko'rsatadi: karta, holatni yangilash, bekor qilish va QR kodli to'lov sahifasi.</div>
+<h2 id="get">To'lovni olish</h2><p><span class="m G">GET</span><code>/payments/{payment_id}</code> — to'lov obyektini qaytaradi (yuqoridagi kabi).</p>
+<p><span class="m G">GET</span><code>/api/public/pay/{payment_id}</code> — <b>kalitsiz</b>, o'z botingizdan 3–5 soniyada bir so'rash uchun: <code>{"id","status","amount","pay_amount","card_number","pay_link","expires_at","paid_at","page_url","qr_available"}</code>. <code>status:"paid"</code> bo'lsa <code>own_bot.paid_text</code> ni ko'rsating; <code>qr_available:false</code> bo'lsa mijozga faqat kartani bering.</p>
+<h2 id="cancel">To'lovni bekor qilish</h2><p><span class="m P">POST</span><code>/payments/{payment_id}/cancel</code> — faqat <code>waiting</code> holatdagi to'lovni bekor qiladi va holatni <code>cancelled</code> qiladi.</p>
+<table><tr><th>Hol</th><th>Javob</th></tr><tr><td>Muvaffaq</td><td><code>200</code> — yangilangan to'lov obyekti (<code>status:"cancelled"</code>)</td></tr><tr><td>To'lov yo'q</td><td><code>404</code></td></tr><tr><td>Yakunlangan (paid/expired/cancelled)</td><td><code>409</code></td></tr></table>
+${C("curl",`curl -X POST ${BASE}/payments/123/cancel -H "X-API-Key: ap_..."`)}
+<div class="note">Bekor qilinganda mijoz (to'lovchi) va qabul qiluvchiga botda xabar chiqadi, webhook eventi <code>payment.cancelled</code> yuboriladi. QR kod endi ishlamaydi. Mijoz sahifaning o'zidan ham bekor qilishi mumkin: <span class="m P">POST</span><code>/api/public/pay/{id}/cancel</code> (kalit talab qilinmaydi).</div>
+<h2 id="more">Ro'yxat, kartalar, obuna</h2>
+<p><span class="m G">GET</span><code>/payments</code> — oxirgi 50 ta to'lov: <code>{"payments":[…]}</code></p>
+<p><span class="m G">GET</span><code>/cards</code> — ulangan kartalaringiz</p>
+<p><span class="m G">GET</span><code>/subscription</code></p>${C("",`{"active": true, "tariff_name": "Pro", "expires_at": "2026-11-28 12:00:00",\n "payments_used": 120, "max_payments": 3000, "max_cards": 10}`)}
+<h2 id="wh">Webhook</h2><p>To'lov holati o'zgarganda sizning URL'ingizga <code>POST</code> yuboriladi. Eventlar: <code>payment.paid</code>, <code>payment.expired</code>, <code>payment.cancelled</code>. Tana — to'lov obyekti (yuqoridagi <code>pay_methods</code> bilan) va <code>event</code> maydoni.</p>
+<table><tr><th>Sarlavha</th><th>Ma'nosi</th></tr><tr><td><code>X-AutoPayuz-Signature</code></td><td><code>t=&lt;vaqt&gt;,v1=&lt;imzo&gt;</code></td></tr><tr><td><code>X-AutoPayuz-Event</code></td><td>Event nomi</td></tr><tr><td><code>X-AutoPayuz-Delivery</code></td><td>Yetkazish ID</td></tr></table>
+<p>Imzo: <code>HMAC-SHA256(webhook_sir, t + "." + xom_tana)</code> (hex). Javobda <code>2xx</code> qaytaring, aks holda qayta uriniladi: darhol, 1 daq, 5 daq, 30 daq, 2 soat.</p>
+${C("",`import hmac, hashlib\ndef verify(secret, header, raw_body: bytes) -> bool:\n    p = dict(x.split("=", 1) for x in header.split(","))\n    exp = hmac.new(secret.encode(), p["t"].encode() + b"." + raw_body, hashlib.sha256).hexdigest()\n    return hmac.compare_digest(exp, p["v1"])`)}
+<div class="note">Vaqt (<code>t</code>) 5 daqiqadan eski bo'lsa, so'rovni rad eting (replay himoya). Bir xil <code>payment_id</code> ikki marta kelsa, bir marta ishlating.</div>
+<h2 id="st">To'lov holatlari</h2><table><tr><th>Holat</th><th>Ma'nosi</th></tr><tr><td><code>waiting</code></td><td>To'lov kutilmoqda</td></tr><tr><td><code>paid</code></td><td>To'langan ✅</td></tr><tr><td><code>expired</code></td><td>Muddat o'tdi (10 daq)</td></tr><tr><td><code>cancelled</code></td><td>Bekor qilindi (API, sahifa yoki bot orqali)</td></tr><tr><td><code>failed</code></td><td>Bekor/xato</td></tr></table>
+<h2 id="err">Xatolar</h2><p>Format: <code>{"detail": "xabar"}</code></p>
+<table><tr><th>Kod</th><th>Sabab</th></tr><tr><td>400</td><td>JSON noto'g'ri, <code>webhook_url</code> https emas, karta yo'q</td></tr><tr><td>401</td><td>API kalit noto'g'ri</td></tr><tr><td>402</td><td>Obuna tugagan yoki to'lov limiti tugagan: tarifni yangilang</td></tr><tr><td>403</td><td>Hisob bloklangan</td></tr><tr><td>404</td><td>To'lov topilmadi</td></tr><tr><td>409</td><td>To'lov allaqachon yakunlangan (<code>paid</code>/<code>expired</code>/<code>cancelled</code>) — bekor qilib bo'lmaydi</td></tr><tr><td>422</td><td><code>amount</code> noto'g'ri</td></tr><tr><td>429</td><td>Juda ko'p so'rov (60/daq)</td></tr><tr><td>503</td><td>To'lov xizmati ulanmagan</td></tr></table>
+`;
+
+const X={curl:`curl -X POST ${BASE}/payments \\\n  -H "X-API-Key: ap_xxx" -H "Content-Type: application/json" \\\n  -d '{"amount": 50000, "order_ref": "A1"}'`,
+python:`import requests\nr = requests.post("${BASE}/payments",\n    headers={"X-API-Key": "ap_xxx"},\n    json={"amount": 50000, "order_ref": "A1"})\nprint(r.json()["pay_amount"], r.json()["card_number"])`,
+node:`const r = await fetch("${BASE}/payments", {\n  method: "POST",\n  headers: {"X-API-Key": "ap_xxx", "Content-Type": "application/json"},\n  body: JSON.stringify({amount: 50000, order_ref: "A1"})\n});\nconsole.log(await r.json());`,
+php:`$ch = curl_init("${BASE}/payments");\ncurl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>1, CURLOPT_POST=>1,\n  CURLOPT_HTTPHEADER=>["X-API-Key: ap_xxx","Content-Type: application/json"],\n  CURLOPT_POSTFIELDS=>json_encode(["amount"=>50000,"order_ref"=>"A1"])]);\necho curl_exec($ch);`};
+tb.innerHTML=Object.keys(X).map((k,i)=>`<button class="${i?'':'on'}" onclick="tab('${k}',this)">${k}</button>`).join("");
+function tab(k,b){[...tb.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");tc.innerHTML=C("",X[k])}tc.innerHTML=C("",X.curl);
+function cp(b){navigator.clipboard.writeText(b.nextSibling.textContent);b.textContent="✓";setTimeout(()=>b.textContent="Nusxa",1200)}
+
+const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const SEL=".doc h2,.doc h3,.doc p,.doc table,.doc pre,.doc .note";
+const reveal=()=>document.querySelectorAll(SEL+":not(.rv)").forEach(el=>io2.observe(el));
+const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("rv");io2.unobserve(e.target);}}),{threshold:.08});
+if(!RM){reveal();setTimeout(reveal,300);addEventListener("scroll",()=>{document.querySelector("nav").classList.toggle("st",scrollY>10)},{passive:true});}
+else document.querySelectorAll(SEL).forEach(el=>el.classList.add("rv"));
+if(!RM)document.addEventListener("click",e=>{
+  const b=e.target.closest(".cp,.btn");if(!b)return;
+  const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height);
+  const s=document.createElement("span");s.className="rip";
+  s.style.cssText="left:"+(e.clientX-r.left-d/2)+"px;top:"+(e.clientY-r.top-d/2)+"px;width:"+d+"px;height:"+d+"px";
+  b.appendChild(s);setTimeout(()=>s.remove(),650);
+});
+</script></body></html>
